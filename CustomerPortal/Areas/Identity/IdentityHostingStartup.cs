@@ -20,7 +20,13 @@ namespace CustomerPortal.Areas.Identity
                     options.UseSqlServer(
                         context.Configuration.GetConnectionString("DbCustomerPortalContextConnection")));
 
-                services.AddDefaultIdentity<CustomerPortalUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                services.AddDefaultIdentity<CustomerPortalUser>(options =>
+                {
+                    options.SignIn.RequireConfirmedAccount = false;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                })
                     .AddEntityFrameworkStores<DbCustomerPortalContext>();
             });
         }

@@ -5,6 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20201201190208_Initial-Create.cs" />
+    <Compile Remove="Migrations\20201201190208_Initial-Create.Designer.cs" />
+    <Compile Remove="Migrations\20201201191857_Initial-Create.cs" />
+    <Compile Remove="Migrations\20201201191857_Initial-Create.Designer.cs" />
+    <Compile Remove="Migrations\20201201192522_Initial-Create.cs" />
+    <Compile Remove="Migrations\20201201192522_Initial-Create.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.10" />
