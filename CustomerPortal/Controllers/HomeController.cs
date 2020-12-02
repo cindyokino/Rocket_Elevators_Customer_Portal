@@ -35,5 +35,17 @@ namespace CustomerPortal.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        // Action to render the Intervention Form page
+        public IActionResult Intervention()
+        {
+            return View();
+        }
+
+        // Action to render the Products page
+        public IActionResult Products()
+        {
+            return View();
+        }
     }
 }
