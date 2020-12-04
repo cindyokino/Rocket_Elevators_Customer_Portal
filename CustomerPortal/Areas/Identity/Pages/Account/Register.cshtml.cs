@@ -80,49 +80,53 @@ namespace CustomerPortal.Areas.Identity.Pages.Account
             returnUrl = returnUrl ?? Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            // http request to REST API - for email validation 
+            // Code to verify if the email exists at Rocket Elevators database
             // ----------------------------------------------------------------------------------------------------------
-            var client = new HttpClient();
-            var response = await client.GetAsync("https://rocketelevatorsrestapicindy.azurewebsites.net/api/Customers");
-            var content = response.Content.ReadAsStringAsync().Result;
-            if (content.Contains(Input.Email))
+            if (ModelState.IsValid)
             {
-            // ----------------------------------------------------------------------------------------------------------
+                var user = new CustomerPortalUser { UserName = Input.Email, Email = Input.Email };
 
-                if (ModelState.IsValid)
+                var client = new HttpClient();
+                var user_email = Input.Email; 
+                var response = await client.GetAsync("https://rocketelevatorsrestapicindy.azurewebsites.net/api/Customers/verify/" + user_email);
+                
+                if (response.StatusCode != System.Net.HttpStatusCode.OK)
                 {
-                    var user = new CustomerPortalUser { UserName = Input.Email, Email = Input.Email };
-                    var result = await _userManager.CreateAsync(user, Input.Password);
-                    if (result.Succeeded)
+                    ModelState.AddModelError(string.Empty, "You're not our customer yet, please contact our team.");
+                    return Page();
+                }
+                // ----------------------------------------------------------------------------------------------------------
+
+                var result = await _userManager.CreateAsync(user, Input.Password);
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("User created a new account with password.");
+
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    var callbackUrl = Url.Page(
+                        "/Account/ConfirmEmail",
+                        pageHandler: null,
+                        values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
+                        protocol: Request.Scheme);
+
+                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
+                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
-                        _logger.LogInformation("User created a new account with password.");
-
-                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        var callbackUrl = Url.Page(
-                            "/Account/ConfirmEmail",
-                            pageHandler: null,
-                            values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
-                            protocol: Request.Scheme);
-
-                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                        if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                        {
-                            return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                        }
-                        else
-                        {
-                            await _signInManager.SignInAsync(user, isPersistent: false);
-                            return LocalRedirect(returnUrl);
-                        }
+                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
-                    foreach (var error in result.Errors)
+                    else
                     {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                        return Page();
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        return LocalRedirect(returnUrl);
                     }
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                    return Page();
                 }
             }
             else
