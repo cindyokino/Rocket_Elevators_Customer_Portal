@@ -9,6 +9,6 @@
         public string model { get; set; }
         public string type_building { get; set; }
 
-        public Column Column { get; set; }
+        //public Column Column { get; set; }
     }
 }
