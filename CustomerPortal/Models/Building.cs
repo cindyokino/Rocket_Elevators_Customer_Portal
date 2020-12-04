@@ -14,5 +14,6 @@ namespace CustomerPortal.Models
         public int customer_id { get; set; }
         public string address_id { get; set; }
         public List<Battery> batteries { get; set; }
+        public Customer customer { get; set; }
     }
 }

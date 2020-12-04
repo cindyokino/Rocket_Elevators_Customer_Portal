@@ -6,5 +6,7 @@ namespace CustomerPortal.Models
     {
         public int id { get; set; }
         public List<Column> columns { get; set; }
+
+        public Building Building { get; set; }
     }
 }
