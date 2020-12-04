@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 
 namespace CustomerPortal.Areas.Identity.Pages.Account
 {
@@ -78,9 +79,24 @@ namespace CustomerPortal.Areas.Identity.Pages.Account
         {
             returnUrl = returnUrl ?? Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            // Code to verify if the email exists at Rocket Elevators database
+            // ----------------------------------------------------------------------------------------------------------
             if (ModelState.IsValid)
             {
                 var user = new CustomerPortalUser { UserName = Input.Email, Email = Input.Email };
+
+                var client = new HttpClient();
+                var user_email = Input.Email; 
+                var response = await client.GetAsync("https://rocketelevatorsrestapicindy.azurewebsites.net/api/Customers/verify/" + user_email);
+                
+                if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    ModelState.AddModelError(string.Empty, "You're not our customer yet, please contact our team.");
+                    return Page();
+                }
+                // ----------------------------------------------------------------------------------------------------------
+
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
@@ -110,10 +126,15 @@ namespace CustomerPortal.Areas.Identity.Pages.Account
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
+                    return Page();
                 }
             }
-
-            // If we got this far, something failed, redisplay form
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Invalid email, you're not a customer yet? Please use valide email or contact us.");
+                return Page();
+            }
+            // If something failed return to login/register page
             return Page();
         }
     }
