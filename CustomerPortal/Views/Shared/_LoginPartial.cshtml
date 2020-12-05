@@ -11,10 +11,13 @@
             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="getFullCustomerInfo">My Products</a> 
+            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="getFullCustomerInfo">My Products</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Intervention">Request Intervention</a> 
+            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Intervention">Request Intervention</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpdateCustomer">Update My Info</a>
         </li>
         <li class="nav-item">
             <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">

@@ -4,11 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http;
 
 namespace CustomerPortal.Controllers
 {
@@ -44,8 +41,29 @@ namespace CustomerPortal.Controllers
         }
 
         // Action to render the Intervention Form page
-        public IActionResult Intervention()
+        public IActionResult Intervention(string elevatorSerialNumber, string columnId, string elevatorId, string buildingId, string batteryId)
         {
+            var user_email = _userManager.GetUserName(User);
+            var customer = _productService.getFullCustomerInfo(user_email);
+
+            ViewBag.elevatorSerialNumber = elevatorSerialNumber;
+            ViewBag.columnId = columnId;
+            ViewBag.elevatorId = elevatorId;
+            ViewBag.buildingId = buildingId;
+            ViewBag.batteryId = batteryId;
+            ViewBag.customer = customer;
+
+            return View();
+        }
+
+        // Action to render the Update Customer Form page
+        public IActionResult UpdateCustomer()
+        {
+            var user_email = _userManager.GetUserName(User);
+            var customer = _productService.getFullCustomerInfo(user_email);
+
+            ViewBag.customer = customer;
+
             return View();
         }
 
@@ -59,7 +77,7 @@ namespace CustomerPortal.Controllers
         // /Home/getFullCustomerInfo
         public IActionResult getFullCustomerInfo()
         {
-            var user_email = _userManager.GetUserName(User);
+            var user_email = _userManager.GetUserName(User); 
             Console.WriteLine("email: " + user_email);
 
             var customer =  _productService.getFullCustomerInfo(user_email);
@@ -70,14 +88,6 @@ namespace CustomerPortal.Controllers
 
             return View("~/Views/Home/Products.cshtml", customer);
         }
-        //------------------------------ TEST ------------------------------
-        public async System.Threading.Tasks.Task<IActionResult> HelloWorld()
-        {
-            _productService.helloWorld();
-            Console.WriteLine("Hello again");
-            return new EmptyResult();
-        }
-        //------------------------------------------------------------------
     }
 }
 

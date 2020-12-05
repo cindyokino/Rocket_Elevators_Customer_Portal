@@ -2,7 +2,26 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
+<div class="text-center" style="padding-top: 100px">
     <h1 class="display-4">Welcome to the Rocket Elevators Portal</h1>    
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <p></p>
+</div>
+
+
+   
+<div class="container" style="padding-top: 100px; text-align: center">
+    <div class="row">
+        <div class="col-md-4">  
+            <button class="btn btn-outline-danger" id="" style="height: 100px; width: 80%" onclick="location.href='@Url.Action("getFullCustomerInfo", "Home")';return false;">MY PRODUCTS</button>
+            <br /><br />
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-outline-danger" id="" style="height: 100px; width: 80%" onclick="location.href='@Url.Action("Intervention", "Home")';return false;">REQUEST INTERVENTION</button>
+            <br /><br />
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-outline-danger" id="" style="height: 100px; width: 80%" onclick="location.href='@Url.Action("UpdateCustomer", "Home")';return false;">UPDATE MY INFO</button>
+            <br /><br />
+        </div>
+    </div>
 </div>
