@@ -11,7 +11,5 @@ namespace CustomerPortal.Models
         public string type_building { get; set; }
         public int amount_floors_served { get; set; }
         public List<Elevator> elevators { get; set; }
-
-        //public Battery Battery { get; set; }
     }
 }

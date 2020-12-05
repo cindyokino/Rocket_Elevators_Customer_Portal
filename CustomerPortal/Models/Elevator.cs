@@ -8,7 +8,5 @@
         public string serial_number { get; set; }
         public string model { get; set; }
         public string type_building { get; set; }
-
-        //public Column Column { get; set; }
     }
 }

@@ -30,25 +30,7 @@ namespace CustomerPortal.Models
             var result = _httpClient.GetAsync("https://rocketelevatorsrestapicindy.azurewebsites.net/api/Customers/" + email).Result;
             var contentBody = result.Content.ReadAsStringAsync().Result;
 
-            var serializerSettings = new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.Objects };
-
             Customer customer = JsonConvert.DeserializeObject<Customer>(contentBody);
-
-            //customer.buildings.ForEach(building =>
-            //{
-            //    building.customer = customer;
-            //    building.batteries.ForEach(battery =>
-            //    {
-            //        battery.Building = building;
-            //        battery.columns.ForEach(column =>
-            //        {
-            //            column.Battery = battery;
-            //            column.elevators.ForEach(elevator => {
-            //                elevator.Column = column;
-            //            });
-            //        });
-            //    });
-            //});
 
             _logger.LogInformation("customer email: {}", customer.cpy_contact_email);
             _logger.LogInformation("customer buildings: {}", customer.buildings);
