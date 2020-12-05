@@ -2,172 +2,255 @@
     ViewData["Title"] = "Intervention";
 }
 
+<script src="~/js/jquery-3.5.1.min.js"></script>
 <div class="text-center">
     <h1 class="display-4">Intervention Form</h1>
     <p></p>
 </div>
+<!-- ************************************* USE OF JAVASCRIPT FOR THE DYNAMIC DROPDOWNS ************************************* -->
+<script>
+let customer = JSON.parse('@Html.Raw(Json.Serialize(ViewBag.customer))');
+$(document).ready(function () {
+    // ------------ Function to clear dropdowns - Please select as default value --------------------------------
+    function clearDropDown(id) {
+        $(id).children().remove();
+        $(id).append(new Option("Please select"));
+    }
 
-<form action="/intervention" method="post" enctype="multipart/form-data" id="interventionForm" date-remote="true">
+    // ------------ Function to clear dropdowns - None as default value -----------------------------------------
+    function clearDropDown_none(id) {
+        $(id).children().remove();
+        $(id).append(new Option("None"));
+    }
+
+    // ------------ Find batteries by building_id -----------------------------------------------------------------
+    $("#building_dropdown").on('change', function () {
+        clearDropDown("#battery_dropdown");
+        clearDropDown_none("#column_dropdown");
+        clearDropDown_none("#elevator_dropdown");
+
+        let batteries = customer.buildings.find(building => building.id == (this.value)).batteries;
+
+        for (let index = 0; index < batteries.length; index++) {
+            let option = new Option(batteries[index], batteries[index].id);
+            $(option).html(batteries[index].id + " - " + batteries[index].cert_ope);
+            $("#battery_dropdown").append(option);
+        }
+    });
+
+    // ------------ Find columns by batery_id ----------------------------------------------------------------------
+    $("#battery_dropdown").on('change', function () {
+        clearDropDown_none("#column_dropdown");
+        clearDropDown_none("#elevator_dropdown");
+
+        let building_id = $('#building_dropdown option:selected').val();
+
+        battery = customer
+            .buildings.find(building => building.id == building_id)
+            .batteries.find(battery => battery.id == this.value);
+
+        let columns = battery.columns;
+        for (let index = 0; index < columns.length; index++) {
+            let option = new Option(columns[index], columns[index].id);
+            $(option).html(columns[index].id + " - " + columns[index].status);
+            $("#column_dropdown").append(option);
+        }
+    });
+
+    // ------------ Find elevators by column_id -------------------------------------------------------------------
+    $("#column_dropdown").on('change', function () {
+        clearDropDown_none("#elevator_dropdown");
+        let building_id = $('#building_dropdown option:selected').val();
+        let battery_id = $('#battery_dropdown option:selected').val();
+
+        column = customer
+            .buildings.find(building => building.id == building_id)
+            .batteries.find(battery => battery.id == battery_id)
+            .columns.find(column => column.id == this.value);
+
+        let elevators = column.elevators;
+        for (let index = 0; index < elevators.length; index++) {
+            let option = new Option(elevators[index], elevators[index].id);
+            $(option).html(elevators[index].id + " - " + elevators[index].serial_number + " - " + elevators[index].status);
+            $("#elevator_dropdown").append(option);
+        }
+    });
+
+    //<!-- ********************************** Fill the form with data after choose a product ****************************** -->
+    clearDropDown("#building_dropdown");
+    clearDropDown("#battery_dropdown");
+    clearDropDown_none("#column_dropdown");
+    clearDropDown_none("#elevator_dropdown");
+
+
+    let batteryId = '@Html.Raw(@ViewBag.batteryId)';
+    let columnId= '@Html.Raw(@ViewBag.columnId)';
+    let elevatorId= '@Html.Raw(@ViewBag.elevatorId)';
+
+
+    let buildings = customer.buildings;
+    for (let index = 0; index < buildings.length; index++) {
+        let option = new Option(buildings[index], buildings[index].id);
+        $(option).html(buildings[index].id);
+        $("#building_dropdown").append(option);
+    }
+
+    // ------------ Fill the form with data after choose a battery ---------------- //
+    if (batteryId) {
+        let building;
+        let battery;
+
+        for (bld of customer.buildings) {
+            for (batt of bld.batteries) {
+                if (batt.id == batteryId) {
+                    building = bld;
+                    battery = batt;
+                    break;
+                }
+            }
+        }
+
+        $("#building_dropdown").val(building.id).change();
+        $("#battery_dropdown").val(battery.id).change();
+    }
+
+    // ------------ Fill the form with data after choose a column ---------------- //
+    if (columnId) {
+        let building;
+        let battery;
+        let column;
+
+        for (bld of customer.buildings) {
+            for (batt of bld.batteries) {
+                for (col of batt.columns) {
+                    if (col.id == columnId) {
+                        building = bld;
+                        battery = batt;
+                        column = col;
+                        break;
+                    }
+                }
+            }
+        }
+
+        $("#building_dropdown").val(building.id).change();
+        $("#battery_dropdown").val(battery.id).change();
+        $("#column_dropdown").val(column.id).change();
+
+    }
+
+    // ------------ Fill the form with data after choose an elevator ---------------- //
+    if (elevatorId) {
+        let building;
+        let battery;
+        let column;
+        let elevator;
+
+        for (bld of customer.buildings) {
+            for (batt of bld.batteries) {
+                for (col of batt.columns) {
+                    for (elv of col.elevators) {
+                        if (elv.id == elevatorId) {
+                            building = bld;
+                            battery = batt;
+                            column = col;
+                            elevator = elv;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        $("#building_dropdown").val(building.id).change();
+        $("#battery_dropdown").val(battery.id).change();
+        $("#column_dropdown").val(column.id).change();
+        $("#elevator_dropdown").val(elevator.id).change();
+
+    }
+});
+
+function createIntervention() {
+    var data = {
+        customer_id: $('#customer_id').val(),
+        author: $('#customer_id').val(),
+        building_id: $('#building_dropdown').val(),
+        battery_id: $('#battery_dropdown').val(),
+        column_id: $('#column_dropdown').val(),
+        elevator_id: $('#elevator_dropdown').val(),
+        report: $('#report').val()
+    };
+
+    $.ajax({
+        //url: 'http://localhost:5000/api/Interventions',
+        url: 'https://rocketelevatorsrestapicindy.azurewebsites.net/api/Interventions',
+        type: 'POST',
+        data: JSON.stringify(data),
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "HEAD, GET, POST, PUT, PATCH, DELETE",
+            "Access-Control-Allow-Headers": "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        success: function (result) {
+            alert('Intervention created successfully!');
+            return false;
+        }
+    });
+
+    return false;
+}
+</script>
+<form onsubmit="return createIntervention()" id="interventionForm">
     <div id="quote_form" class="container">
         <div class="row">
             <div id="typeChoice" class="col-md-12 form-group">
-
-
-                <!-- ************************************* USE OF AJAX FOR THE DYNAMIC DROPDOWNS ************************************* -->
-                <script>
-                    $(document).ready(function () {
-
-                        // ------------ Function to clear dropdowns - Please select as default value --------------------------------
-                        function clearDropDown(id) {
-                            $(id).children().remove();
-                            $(id).append(new Option("Please select"));
-                        }
-
-                        // ------------ Function to clear dropdowns - None as default value -----------------------------------------
-                        function clearDropDown_none(id) {
-                            $(id).children().remove();
-                            $(id).append(new Option("None"));
-                        }
-
-                        // ------------ Find buildings by customer_id ---------------------------------------------------------------
-                        $("#customer_dropdown").on('change', function () {
-                            clearDropDown("#building_dropdown");
-                            clearDropDown("#battery_dropdown");
-                            clearDropDown_none("#column_dropdown");
-                            clearDropDown_none("#elevator_dropdown");
-                            $.ajax({
-                                url: "get_buildings_from_customer", //url '/get_buildings_from_customer' from routes.rb that calls 'get_batteries_from_building' function from 'interventions' controller
-                                type: "GET",
-                                data: { customer_id: $(this).val() },
-                                success: function (data) {
-                                    console.log(data)
-                                    let buildings = data;
-                                    for (let index = 0; index < buildings.length; index++) {
-                                        let option = new Option(buildings[index], buildings[index].id);
-                                        $(option).html(buildings[index].address.address);
-                                        $("#building_dropdown").append(option);
-                                    }
-                                }
-                            })
-                        })
-
-                        // ------------ Find batteries by building_id -----------------------------------------------------------------
-                        $("#building_dropdown").on('change', function () {
-                            clearDropDown("#battery_dropdown");
-                            clearDropDown_none("#column_dropdown");
-                            clearDropDown_none("#elevator_dropdown");
-                            $.ajax({
-                                url: "get_batteries_from_building",
-                                type: "GET",
-                                data: { building_id: $(this).val() },
-                                success: function (data) {
-                                    console.log(data)
-                                    let batteries = data;
-                                    for (let index = 0; index < batteries.length; index++) {
-                                        let option = new Option(batteries[index], batteries[index].id);
-                                        $(option).html(batteries[index].id + " - " + batteries[index].cert_ope);
-                                        $("#battery_dropdown").append(option);
-                                    }
-                                }
-                            })
-                        })
-
-                        // ------------ Find columns by batery_id ----------------------------------------------------------------------
-                        $("#battery_dropdown").on('change', function () {
-                            clearDropDown_none("#column_dropdown");
-                            clearDropDown_none("#elevator_dropdown");
-                            $.ajax({
-                                url: "get_columns_from_battery",
-                                type: "GET",
-                                data: { battery_id: $(this).val() },
-                                success: function (data) {
-                                    console.log(data)
-                                    let columns = data;
-                                    for (let index = 0; index < columns.length; index++) {
-                                        let option = new Option(columns[index], columns[index].id);
-                                        $(option).html(columns[index].id + " - " + columns[index].status);
-                                        $("#column_dropdown").append(option);
-                                    }
-                                }
-                            })
-                        })
-
-                        // ------------ Find elevators by column_id -------------------------------------------------------------------
-                        $("#column_dropdown").on('change', function () {
-                            clearDropDown_none("#elevator_dropdown");
-                            $.ajax({
-                                url: "get_elevators_from_column",
-                                type: "GET",
-                                data: { column_id: $(this).val() },
-                                success: function (data) {
-                                    console.log(data)
-                                    let elevators = data;
-                                    for (let index = 0; index < elevators.length; index++) {
-                                        let option = new Option(elevators[index], elevators[index].id);
-                                        $(option).html(elevators[index].serial_number + " - " + elevators[index].status);
-                                        $("#elevator_dropdown").append(option);
-                                    }
-                                }
-                            })
-                        })
-                    });
-                </script>
-
-
                 <!-- *********************************************** DYNAMIC DROPDOWNS *********************************************** -->
                 <!-- ------------ DropDown Selector listing all customers ----------------------------------------------- -->
-                <label id="customer_id">Customer:</label>
-                <input required type="text" id="customer_id" name="customer_id" value="Logged  Customer" readonly>
-                <br /><br />
+                <label for="customer_name">Customer:</label>
+                <input required type="text" id="customer_name" name="customer_name" class="form-control" value="@ViewBag.customer.company_name" readonly disabled>
+                <input type="hidden" id="customer_id" name="customer_id" value="@ViewBag.customer.id">
+                <br />
 
                 <!-- ------------ DropDown Selector listing all buildings belonging to the selected customer ------------ -->
                 <label id="building_id">Building:</label>
-                <select required id="building_dropdown" name="building_id">
+
+                <select required id="building_dropdown" name="building_id" class="form-control">
                     <option value="">Please select</option>
                 </select>
-                <br /><br />
+                <br />
 
                 <!-- ------------ DropDown Selector listing all batteries belonging to the selected building ------------ -->
                 <label id="battery_id">Battery:</label>
-                <select required id="battery_dropdown" name="battery_id">
+                <select required id="battery_dropdown" name="battery_id" class="form-control">
                     <option value="">Please select</option>
                 </select>
-                <br /><br />
+                <br />
 
                 <!-- ------------ DropDown Selector listing all columns belonging to the selected battery --------------- -->
                 <label id="column_id">Column:</label>
-                <select id="column_dropdown" name="column_id">
+                <select id="column_dropdown" name="column_id" class="form-control">
                     <option value="">None</option>
                 </select>
-                <br /><br />
+                <br />
 
                 <!-- ------------ DropDown Selector listing all elevators belonging to the selected column -------------- -->
                 <label id="elevator_id">Elevator:</label>
-                <select id="elevator_dropdown" name="elevator_id">
+                <select id="elevator_dropdown" name="elevator_id" class="form-control">
                     <option value="">None</option>
                 </select>
-                <br /><br />
-
-                <!-- *********************************************** OTHER FIELDS *********************************************** -->
-                <!-- ------------ DropDown Selector listing all the company's employees --------------------------------- -->
-                <label for="employee_id">Employee:</label>
-                <select name="employee_id">
-                    <option selected value="None"> None </option>
-                    @*<%= @employees.each do |employee| %>
-            <option value="<%= employee.id %>"><%= employee.first_name + " " + employee.last_name %></option>
-            <% end %>*@
-                </select>
-                <br /><br />
+                <br />
 
                 <!-- ------------ Description --------------------------------------------------------------------------- -->
                 <label for="project_description">Project Description</label>
-                <input required type="text" value="" class="form-control" name="report" id="contact:description">
-                <br /><br />
+                <input required type="text" value="" class="form-control" name="report" id="report">
+                <br />
 
                 <div class="row">
                     <!--submit-->
                     <div class="col-md-12">
-                        <button type="submit" class="btn btn-rblue" id="btnIntervention"><i class="fa fa-check"></i> SUBMIT INTERVENTION</button>
+                        <button type="submit" class="btn btn-primary" id="btnIntervention"><i class="fa fa-check"></i> SUBMIT INTERVENTION</button>
                         <br /><br />
                     </div>
                 </div>

@@ -6,8 +6,13 @@
 
 <div class="text-center">
     <h1 class="display-4">Product management</h1>
+    <p>
+        See the details of the different products purchased from us: batteries, columns and elevators.
+    </p>
 
     <div class="accordion" id="accordionExample">
+
+        @* =========================================== BATTERIES =========================================== *@
         <div class="card">
             <div class="card-header" id="headingOne">
                 <h5 class="mb-0">
@@ -16,38 +21,36 @@
                     </button>
                 </h5>
             </div>
-
-            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
                 <div class="card-body">
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th>Header1</th>
-                                <th>Header2</th>
+                                <th>Battery Id</th>
+                                <th>Building Id</th>
+                                <th>Status</th>
+                                <th>Certificate Operation</th>
+                                <th>New Intervention</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Data1</td>
-                                <td>Data2</td>
-                            </tr>
-                            <tr>
-                                <td>Data1</td>
-                                <td>Data2</td>
-                            </tr>
-                            <tr>
-                                <td>Data1</td>
-                                <td>Data2</td>
-                            </tr>
-                            <tr>
-                                <td>Data1</td>
-                                <td>Data2</td>
-                            </tr>
+                            @foreach (var battery in Model.buildings.SelectMany(bu => bu.batteries))
+                            {
+                                <tr>
+                                    <td>@battery.id</td>
+                                    <td>@battery.building_id</td>
+                                    <td>@battery.status</td>
+                                    <td>@battery.cert_ope</td>
+                                    <td><a href="@Url.Action("Intervention", "Home", new { batteryId = battery.id, buildingId = battery.building_id })">Edit</a></td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        @* =========================================== COLLUMNS =========================================== *@
         <div class="card">
             <div class="card-header" id="headingTwo">
                 <h5 class="mb-0">
@@ -61,27 +64,26 @@
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th>Header1</th>
-                                <th>Header2</th>
+                                <th>Column Id</th>
+                                <th>Battery Id</th>
+                                <th>Building Type</th>
+                                <th>Floors Served</th>
+                                <th>Status</th>
+                                <th>New Intervention</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Data1</td>
-                                <td>Data2</td>
-                            </tr>
-                            <tr>
-                                <td>Data1</td>
-                                <td>Data2</td>
-                            </tr>
-                            <tr>
-                                <td>Data1</td>
-                                <td>Data2</td>
-                            </tr>
-                            <tr>
-                                <td>Data1</td>
-                                <td>Data2</td>
-                            </tr>
+                            @foreach (var column in Model.buildings.SelectMany(bu => bu.batteries.SelectMany(ba => ba.columns)))
+                            {
+                                <tr>
+                                    <td>@column.id</td>
+                                    <td>@column.battery_id</td>
+                                    <td>@column.type_building</td>
+                                    <td>@column.amount_floors_served</td>
+                                    <td>@column.status</td>
+                                    <td><a href="@Url.Action("Intervention", "Home", new { columnId = column.id, batteryId = column.battery_id })">Edit</a></td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -95,12 +97,15 @@
                     </button>
                 </h5>
             </div>
+
+            @* =========================================== ELEVATORS =========================================== *@
             <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
                 <div class="card-body">
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
                                 <th>Elevator Id</th>
+                                <th>Column Id</th>
                                 <th>Model</th>
                                 <th>Serial Number</th>
                                 <th>Status</th>
@@ -108,35 +113,21 @@
                             </tr>
                         </thead>
                         <tbody>
-
                             @foreach (var elevator in Model.buildings.SelectMany(bu => bu.batteries.SelectMany(ba => ba.columns.SelectMany(co => co.elevators))))
                             {
-                            <tr>
-                                <td>@elevator.id</td>
-                                <td>@elevator.id</td>
-                                <td>@elevator.model</td>
-                                <td>@elevator.serial_number</td>
-                                <td>@elevator.serial_number</td>
-                                <td>/create(@elevator.serial_number)</td>
-                            </tr>
+                                <tr>
+                                    <td>@elevator.id</td>
+                                    <td>@elevator.column_id</td>
+                                    <td>@elevator.model</td>
+                                    <td>@elevator.serial_number</td>
+                                    <td>@elevator.status</td>
+                                    <td><a href="@Url.Action("Intervention", "Home", new { elevatorId = elevator.id, columnId = elevator.column_id, elevatorSerialNumber = elevator.serial_number })">Edit</a></td>
+                                </tr>
                             }
-                            <tr>
-                                <td>Data1</td>
-                                <td>@Model.sta_name</td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-
-
-
-    <p>        
-        See the details of the different products purchased from us: batteries, columns and elevators.
-    </p>
-    <p>
-        You can also modify your personal information, such as addresses or contact details.
-    </p>
 </div>
